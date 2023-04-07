@@ -18,3 +18,4 @@ jobs:
         apt-get update && apt-get -y install maven
         mvn clean test
         mvn clean package
+        
