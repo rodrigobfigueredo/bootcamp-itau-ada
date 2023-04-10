@@ -12,20 +12,43 @@ on:
     paths:
     - 'frontend/**'
 
+env:
+  USER: ${{ github.actor }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN2 }}
+  REGISTRY: ghcr.io
+  IMAGE_NAME: bootcamp-frontend
+  IMAGE_VERSION: 1.0.0
 
 jobs:
   TestandDeploy:
     name: Test frontend aplicatuion and build docker image
     runs-on: self-hosted
+    permissions:
+      packages: write    
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Running tests
-      run: |
-        apt-get update && apt-get -y install npm
-        npm install -g @angular/cli
-        ng test
-    - name: Build docker image
-      run: |
-        docker build -t frontend-app:latest .
+#    - name: Running tests
+#      run: |
+#        apt-get update && apt-get -y install npm
+#        npm install -g @angular/cli
+#        ng test
+#    - name: Build docker image
+#      run: |
+#        docker build -t frontend-app:latest .
+
+    - name: Log into registry ${{ env.REGISTRY }}
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ env.GH_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
